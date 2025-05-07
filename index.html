@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Input App</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .command-container { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+        .active {
+            background-color: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Command Input App</h1>
+    <input type="text" id="website-name" style="margin-bottom: 30px;" placeholder="website name">
+    <button onclick="submitWebsiteName()">Submit website name</button>
+    <br>
+    <input type="text" id="command-name" placeholder="Enter command name">
+    <button onclick="addCommand()">Add Command</button>
+    <div id="commands-list"></div>
+    <button onclick="createWebsite()">Create Webpage</button>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
