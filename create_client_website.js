@@ -55,15 +55,14 @@ function createWebsite() {
         <h4>Required Parameters</h4>
         ${command.params.map(param =>
             param.type === "file" ? 
-            `<form action="/uploadFile" enctype="multipart/form-data" method="POST"> 
-                <span>${param.name}</span> 
-                <input class="param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> 
-                <div class="tooltip">
-                    ? <span class="tooltiptext">${param.description}</span>
-                </div>
-                <br> 
-                <input type="submit" value="submit"> 
-            </form>
+            `
+            <span>${param.name}</span> 
+            <input class="param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> 
+            <div class="tooltip">
+                ? <span class="tooltiptext">${param.description}</span>
+            </div>
+            <br> 
+            <button onclick="uploadFile('${command.name}-${param.name}')">Upload File</button> 
             ` 
             : param.type === "multi-value" ?
             `<label for="${command.name}-${param.name}">${param.name}</label>
@@ -89,11 +88,16 @@ function createWebsite() {
         <h4>Optional Parameters</h4>
         ${command.optionalParams.map(param =>
             param.type === "file" ? 
-            `<form action="/uploadFile" enctype="multipart/form-data" method="POST"> 
-                <span>${param.name}</span> 
-                <input param-value="${param.value}" class="optional-param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> <br> 
-                <input type="submit" value="submit"> 
-            </form>` 
+            `
+            <span>${param.name}</span> 
+            <input param-value="${param.value}" class="optional-param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> <br> 
+            <button onclick="uploadFile('${command.name}-${param.name}')">Upload File</button> 
+            <div class="tooltip">
+                ? <span class="tooltiptext"></span>
+            </div>
+            <br>
+            <button onclick="uploadFile('${command.name}-${param.name}')">Upload File</button> 
+            ` 
             :
             param.type === "boolean" ?
             `
@@ -261,6 +265,28 @@ function createWebsite() {
             link.href = URL.createObjectURL(txtData);
             link.download = 'data.txt';
             link.click();
+        }
+
+        async function uploadFile(fileInput_src) {
+            console.log(\`uploading file \$\{fileInput_src\}\`);
+            const fileInput = document.getElementById(fileInput_src);
+            if (!fileInput.files.length) {
+            alert("Please select a file first.");
+            return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+            const res = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            alert(await res.text());
+            } catch (err) {
+            alert('Upload failed: ' + err.message);
+            }
         }
     </script>
 </body>

@@ -61,11 +61,14 @@ function addCommand() {
         <input type="text" placeholder="none" id="help-description-${commandName}">
         <div id="multi-value-field-${commandName}-div"></div>
 
+        <br>
+
         <h5>Required Parameters:</h5>
         <ul id="params-list-${commandName}"></ul>
 
         <h5>Optional Parameters:</h5>
         <ul id="optional-params-list-${commandName}"></ul>
+
 
 
         <p id="absPath-${commandName}-label"></p>
