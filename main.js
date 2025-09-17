@@ -1,4 +1,4 @@
-import {handleNumberTypeChange, handleParamTypeChange, addParam, addOptionalParam, addAbsolutePath, deleteParameter, handleMultiValueChange} from "./param_utils.js";
+import {handleNumberTypeChange, handleParamTypeChange, addParam, addAbsolutePath, deleteParameter, handleMultiValueChange} from "./param_utils.js";
 import {createWebsite, downloadFile} from "./create_client_website.js";
 
 // list of command objects and their unique parameters
@@ -18,34 +18,23 @@ function addCommand() {
     commandDiv.classList.add("command-container");
     commandDiv.innerHTML = `
         <h2>${commandName}</h2>
-
-        <label for="param-${commandName}">Required Parameter Label</label>
-        <input type="text" placeholder="Enter parameter label" id="param-${commandName}">
-        <select id="param-type-${commandName}" onChange="handleNumberTypeChange('${commandName}', false); handleMultiValueChange('${commandName}', false)">
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="file">File</option>
-            <option value="multi-value">Multi-Value</option>
-        </select>
-        <button onclick="addParam('${commandName}')">Add Parameter</button>
-        <br>
-
        
         <br>
-        <label for="optional-param-${commandName}">Optional Parameter Label</label>
-        <input type="text" placeholder="Enter parameter label" id="optional-param-${commandName}">
-        <select id="optional-param-type-${commandName}" onChange="handleParamTypeChange('${commandName}'); handleNumberTypeChange('${commandName}', true); handleMultiValueChange('${commandName}', true)">
+        <label for="param-${commandName}">Parameter Label</label>
+        <input type="text" placeholder="Enter parameter label" id="param-${commandName}">
+
+        <select id="param-type-${commandName}" onChange="handleParamTypeChange('${commandName}'); handleNumberTypeChange('${commandName}'); handleMultiValueChange('${commandName}')">
             <option value="string">String</option>
             <option value="number">Number</option>
             <option value="boolean">Boolean</option>
             <option value="file">File</option>
             <option value="multi-value">Multi-Value</option>
         </select>
-        <button onclick="addOptionalParam('${commandName}')">Add Parameter</button>
+        <button onclick="addParam('${commandName}')">Add Parameter</button>
         <br>
-        <div id="optional-input-extra-field-${commandName}"> 
-            <label for="optional-param-input-${commandName}">Optional Param Value:</label>
-            <input id="optional-param-input-${commandName}" type="text" placeholder="Enter Param Value">
+        <div id="input-extra-field-${commandName}"> 
+            <label for="param-input-${commandName}">Param Value:</label>
+            <input id="param-input-${commandName}" type="text" placeholder="Enter Param Value">
             <span> *use <> for values user will input ex. --user=<> ; if user typed in Bob the param is --user=Bob<span>
         </div> 
 
@@ -55,6 +44,14 @@ function addCommand() {
         <br>
         <input type="text" placeholder="Enter absolute path" id="absPath-${commandName}">
         <button onclick="addAbsolutePath('${commandName}')">Add Absolute Path</button>
+
+        <br>
+        <label>
+            <input type="checkbox" id="required-${commandName}-checkbox"> Required Parameter
+            <br>
+            <input type="checkbox" id="optional-${commandName}-checkbox"> Optional Parameter
+        </label>
+        <br>
 
         <br>
         <label for="help-description-${commandName}">Help Description</label>
@@ -88,7 +85,6 @@ window.submitWebsiteName = submitWebsiteName;
 
 // param function listeners
 window.addParam = addParam;
-window.addOptionalParam = addOptionalParam;
 window.addAbsolutePath = addAbsolutePath;
 window.handleParamTypeChange = handleParamTypeChange;
 window.handleNumberTypeChange = handleNumberTypeChange;

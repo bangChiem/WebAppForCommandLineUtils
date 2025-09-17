@@ -57,7 +57,7 @@ function createWebsite() {
             param.type === "file" ? 
             `
             <span>${param.name}</span> 
-            <input class="param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> 
+            <input param-value="${param.value}" class="param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> 
             <div class="tooltip">
                 ? <span class="tooltiptext">${param.description}</span>
             </div>
@@ -66,7 +66,7 @@ function createWebsite() {
             ` 
             : param.type === "multi-value" ?
             `<label for="${command.name}-${param.name}">${param.name}</label>
-            <select class="param-for-${command.name}" id="${command.name}-${param.name}">
+            <select param-value="${param.value}" class="param-for-${command.name}" id="${command.name}-${param.name}">
                 ${param.values.map(val => `<option value="${val}">${val}</option>`).join('')}
             </select>
             <div class="tooltip">
@@ -75,7 +75,7 @@ function createWebsite() {
             <br>`
             :
             `<label for="${command.name}-${param.name}">${param.name} </label>
-                <input type="${param.type === "number" ? "number" : "text"}" 
+                <input param-value="${param.value}" type="${param.type === "number" ? "number" : "text"}" 
                     class="param-for-${command.name}" id="${command.name}-${param.name}" 
                     ${param.type === "number" ? `max="${param.max}" min="${param.min}" onchange="validateRange(this)" ${param.intDecimalrestrict === "int" ? "onkeypress=\"return restrictDecimal(event)\"" : ""}` : ''}
                     >
@@ -217,20 +217,47 @@ function createWebsite() {
             }
 
             parameters.forEach(param => {
-                if(param.type === "file"){
-                    const fileInput = document.getElementById(param.id);
-                    data += fileInput.files[0].name;
-                    data += " "; 
+                if(document.getElementById(param.id).value == ""){
+                    return;
+                }
+
+                if(document.getElementById(param.id).value == "No Selection"){
+                    return;
+                }
+                
+                if(param.type === "checkbox"){
+                    if(!(document.getElementById(param.id).checked)){
+                        return;
+                    }
+                }
+
+                if (param.type === "checkbox"){
+                    if (document.getElementById(param.id).checked){
+                        data += param.getAttribute("boolean-value");
+                    }
                 }
                 else{
-                    data += document.getElementById(param.id).value;
-                    data += " "; 
+                    let syntax = param.getAttribute("param-value");
+                    let paramInput;
+                    if(param.type == "file"){
+                        paramInput = document.getElementById(param.id).files[0].name;
+                    }
+                    else{
+                        paramInput = document.getElementById(param.id).value;
+                    }
+                    let result = syntax.replace("<>", paramInput);
+                    data += result;
                 }
+                data += " "; 
             });
 
             const optionalParameters = document.querySelectorAll(\`.optional-param-for-\$\{command\}\`);
             optionalParameters.forEach(param => {
                 if(document.getElementById(param.id).value == ""){
+                    return;
+                }
+
+                if(document.getElementById(param.id).value == "No Selection"){
                     return;
                 }
                 
