@@ -2,7 +2,6 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const cookieParser = require('cookie-parser');
 const crypto = require('crypto'); // using built-in instead of uuid
 
 const app = express();
@@ -14,16 +13,6 @@ if (!fs.existsSync(uploadFolder)) fs.mkdirSync(uploadFolder);
 
 // Serve uploads statically (must come AFTER uploadFolder is defined)
 app.use('/uploads', express.static(uploadFolder));
-
-app.use(cookieParser());
-
-// Middleware to assign a unique userId cookie if not set
-app.use((req, res, next) => {
-  if (!req.cookies.userId) {
-    res.cookie('userId', crypto.randomUUID(), { httpOnly: true });
-  }
-  next();
-});
 
 // Multer storage
 const storage = multer.diskStorage({
