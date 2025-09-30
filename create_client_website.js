@@ -91,9 +91,8 @@ function createWebsite() {
             `
             <span>${param.name}</span> 
             <input param-value="${param.value}" class="optional-param-for-${command.name}" id="${command.name}-${param.name}" type="file" name="fileupload" required/> <br> 
-            <button onclick="uploadFile('${command.name}-${param.name}')">Upload File</button> 
             <div class="tooltip">
-                ? <span class="tooltiptext"></span>
+                ? <span class="tooltiptext">${param.description}</span>
             </div>
             <br>
             <button onclick="uploadFile('${command.name}-${param.name}')">Upload File</button> 
@@ -139,7 +138,8 @@ function createWebsite() {
         `
     ).join('')}
 
-    
+    <h3>Your Uploaded Files</h3>
+    <ul id="file-list"></ul>
 
     <script>
         function validateRange(input) {
@@ -170,25 +170,25 @@ function createWebsite() {
         function downloadTxt(command) {
             let data = '';
 
-            if (document.getElementById(\`\$\{command\}-abs-path\`).innerText != ""){
-                data += document.getElementById(\`\$\{command\}-abs-path\`).innerText;
+            if (document.getElementById(\`\${command}-abs-path\`).innerText != ""){
+                data += document.getElementById(\`\${command}-abs-path\`).innerText;
                 data += " ";
             }   
 
-            data += document.getElementById(\`command-name-\$\{command\}\`).innerText;
+            data += document.getElementById(\`command-name-\${command}\`).innerText;
             data += " ";
 
-            const parameters = document.querySelectorAll(\`.param-for-\$\{command\}\`);
+            const parameters = document.querySelectorAll(\`.param-for-\${command}\`);
 
             for (const param of parameters) {
                 if (document.getElementById(param.id).value === "") {
-                    alert(\`Fill out all fields in required parameters section \$\{command\} \`);
+                    alert(\`Fill out all fields in required parameters section \${command} \`);
                     return; // Stop function execution
                 }
             }
 
             // check for if inputted number is in range
-            const optional_and_required_parameter_elements = document.querySelectorAll(\`.param-for-\$\{command\}, .optional-param-for-\$\{command\}\`);
+            const optional_and_required_parameter_elements = document.querySelectorAll(\`.param-for-\${command}, .optional-param-for-\${command}\`);
             var invalid_range_flag = false;
             var invalid_range_msg = "";
             for (const param of optional_and_required_parameter_elements) {
@@ -201,11 +201,11 @@ function createWebsite() {
                         const min = Number(inputEl.min);
                         if (value >= max){
                             invalid_range_flag = true;
-                            invalid_range_msg += \`In Parameter: \$\{document.querySelector(\`label[for="\$\{param.id\}"]\`).innerHTML\}for the command \$\{command\} the inputted value is too large. MAX = \$\{max\} \\n \\n \`;
+                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too large. MAX = \${max} \n \n \`;
                         }
                         if (value <= min){
                             invalid_range_flag = true;
-                            invalid_range_msg += \`In Parameter: \$\{document.querySelector(\`label[for="\$\{param.id}"]\`).innerHTML\}for the command \$\{command\} the inputted value is too small. Min = \$\{min\} \\n\ \\n \`;
+                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too small. Min = \${min} \n \n \`;
                         }
                     }
                 }
@@ -251,7 +251,7 @@ function createWebsite() {
                 data += " "; 
             });
 
-            const optionalParameters = document.querySelectorAll(\`.optional-param-for-\$\{command\}\`);
+            const optionalParameters = document.querySelectorAll(\`.optional-param-for-\${command}\`);
             optionalParameters.forEach(param => {
                 if(document.getElementById(param.id).value == ""){
                     return;
@@ -294,29 +294,82 @@ function createWebsite() {
             link.click();
         }
 
+        // Try to retrieve an existing userId from the browser's localStorage.
+        // If this is the first visit (or storage was cleared), this will be null.
+        let userId = sessionStorage.getItem('userId');
+
+        // If no userId was found in localStorage (meaning it's a first-time visit
+        // or storage has been cleared), generate a brand-new one.
+        if (!userId) {
+            // Create a new unique identifier for this browser session
+            userId = crypto.randomUUID();
+
+            // Save the new userId into localStorage so it persists across page reloads
+            // and future visits from the same browser.
+            sessionStorage.setItem('userId', userId);
+        }
+
         async function uploadFile(fileInput_src) {
-            console.log(\`uploading file \$\{fileInput_src\}\`);
+            console.log(\`UserID: \${userId}\`); //DEMO PURPOSES
             const fileInput = document.getElementById(fileInput_src);
             if (!fileInput.files.length) {
-            alert("Please select a file first.");
-            return;
+                alert("Please select a file first.");
+                return;
             }
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
+            formData.append('userId', userId); // include userId in form data
 
             try {
-            const res = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            alert(await res.text());
+                const res = await fetch(\`/upload?userId=\${userId}\`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const msg = await res.text();
+                alert(msg);
+
+                // Refresh file list immediately after upload
+                loadFiles();
             } catch (err) {
-            alert('Upload failed: ' + err.message);
+                alert('Upload failed: ' + err.message);
             }
         }
+
+        async function loadFiles() {
+            try {
+                const res = await fetch(\`/files?userId=\${userId}\`);
+                const files = await res.json();
+
+                const list = document.getElementById('file-list');
+                list.innerHTML = ''; // clear old list
+
+                if (files.length === 0) {
+                    list.innerHTML = '<li>No files uploaded yet.</li>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    li.textContent = file;
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                console.error('Error loading files:', err);
+            }
+        }
+
+        // have listener to fetch all current files in the directory on page load; ignore if no userId in localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+        // Only fetch files if a userId already exists in localStorage
+        // (meaning this is not the very first visit)
+        if (localStorage.getItem('userId')) {
+            loadFiles();
+        }
+    });
+
     </script>
-</body>
+    </body>
 </html>`;
 
     const cssContent = `body { font-family: Arial, sans-serif; } form { margin: 20px; }`;
