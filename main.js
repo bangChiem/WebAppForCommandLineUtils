@@ -69,6 +69,60 @@ function addCommand() {
 
 
         <p id="absPath-${commandName}-label"></p>
+
+        <h3>Server Specifications:</h3>
+        <label for="fileType">Choose a file type:</label>
+        <select id="fileType" name="fileType" onchange="toggleCustomInput(this)">
+        <optgroup label="Data">
+            <option value="data">Generic Data (.data)</option>
+            <option value="dat">DAT (.dat)</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="json">JSON (.json)</option>
+            <option value="xml">XML (.xml)</option>
+        </optgroup>
+
+        <optgroup label="Documents">
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="docx">Word (.docx)</option>
+            <option value="txt">Text (.txt)</option>
+            <option value="rtf">Rich Text (.rtf)</option>
+            <option value="md">Markdown (.md)</option>
+        </optgroup>
+
+        <optgroup label="Images">
+            <option value="jpg">JPEG (.jpg)</option>
+            <option value="png">PNG (.png)</option>
+            <option value="gif">GIF (.gif)</option>
+            <option value="svg">SVG (.svg)</option>
+            <option value="webp">WebP (.webp)</option>
+        </optgroup>
+
+        <optgroup label="Audio">
+            <option value="mp3">MP3 (.mp3)</option>
+            <option value="wav">WAV (.wav)</option>
+            <option value="ogg">OGG (.ogg)</option>
+        </optgroup>
+
+        <optgroup label="Video">
+            <option value="mp4">MP4 (.mp4)</option>
+            <option value="mov">MOV (.mov)</option>
+            <option value="avi">AVI (.avi)</option>
+            <option value="webm">WebM (.webm)</option>
+        </optgroup>
+
+        <optgroup label="Code">
+            <option value="html">HTML (.html)</option>
+            <option value="css">CSS (.css)</option>
+            <option value="js">JavaScript (.js)</option>
+            <option value="py">Python (.py)</option>
+            <option value="java">Java (.java)</option>
+        </optgroup>
+
+        <option value="custom">Custom...</option>
+        </select>
+
+        <!-- Hidden custom input field -->
+        <input type="text" id="customFileType" name="customFileType" placeholder="Enter custom file type (e.g. .mytype)" style="display:none; margin-left:10px;">
     `;
     document.getElementById("commands-list").appendChild(commandDiv);
     document.getElementById("command-name").value = "";
@@ -79,9 +133,21 @@ function submitWebsiteName(){
     website_name = document.getElementById("website-name").value;
 }
 
+function toggleCustomInput(select) {
+    const customInput = document.getElementById('customFileType');
+    if (select.value === 'custom') {
+      customInput.style.display = 'inline-block';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+      customInput.value = '';
+    }
+  }
+
 // command function listeners
 window.addCommand = addCommand;
 window.submitWebsiteName = submitWebsiteName;
+window.toggleCustomInput = toggleCustomInput;
 
 // param function listeners
 window.addParam = addParam;
