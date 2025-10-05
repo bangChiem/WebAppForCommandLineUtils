@@ -372,12 +372,7 @@ function createWebsite() {
     </body>
 </html>`;
 
-    const cssContent = `body { font-family: Arial, sans-serif; } form { margin: 20px; }`;
-    const jsContent = "";
-
     downloadFile("index.html", htmlContent);
-    downloadFile("styles.css", cssContent);
-    downloadFile("script.js", jsContent);
 }
 
 function downloadFile(filename, content) {
