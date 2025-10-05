@@ -302,7 +302,16 @@ function createWebsite() {
         // or storage has been cleared), generate a brand-new one.
         if (!userId) {
             // Create a new unique identifier for this browser session
+            if (window.crypto && crypto.randomUUID) {
             userId = crypto.randomUUID();
+            } else {
+            // Fallback: generate pseudo-random UUID manually
+            userId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
 
             // Save the new userId into localStorage so it persists across page reloads
             // and future visits from the same browser.
