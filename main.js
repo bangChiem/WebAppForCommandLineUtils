@@ -1,5 +1,6 @@
 import {handleNumberTypeChange, handleParamTypeChange, addParam, addAbsolutePath, deleteParameter, handleMultiValueChange} from "./param_utils.js";
 import {createWebsite, downloadFile} from "./create_client_website.js";
+import {createServer} from "./create_client_server.js";
 
 // list of command objects and their unique parameters
 let commands = [];
@@ -10,7 +11,7 @@ function addCommand() {
     const commandName = document.getElementById("command-name").value.trim();
     if (commandName === "") return;
     
-    const commandObj = { name: commandName, params: [], optionalParams: [], absPath: "", description: "none"};
+    const commandObj = { name: commandName, params: [], optionalParams: [], absPath: "", description: "none", FileTypes: []};
     commands.push(commandObj);
 
     // Create command UI
@@ -71,58 +72,39 @@ function addCommand() {
         <p id="absPath-${commandName}-label"></p>
 
         <h3>Server Specifications:</h3>
-        <label for="fileType">Choose a file type:</label>
-        <select id="fileType" name="fileType" onchange="toggleCustomInput(this)">
-        <optgroup label="Data">
-            <option value="data">Generic Data (.data)</option>
-            <option value="dat">DAT (.dat)</option>
-            <option value="csv">CSV (.csv)</option>
-            <option value="json">JSON (.json)</option>
-            <option value="xml">XML (.xml)</option>
-        </optgroup>
+        <label>Choose allowed file types:</label>
 
-        <optgroup label="Documents">
-            <option value="pdf">PDF (.pdf)</option>
-            <option value="docx">Word (.docx)</option>
-            <option value="txt">Text (.txt)</option>
-            <option value="rtf">Rich Text (.rtf)</option>
-            <option value="md">Markdown (.md)</option>
-        </optgroup>
+        <div id="${commandName}-fileTypeOptions">
+            <strong>Data</strong><br>
+            <label><input type="checkbox" value="data" onchange="updateSelected('${commandName}')"> Generic Data (.data)</label><br>
+            <label><input type="checkbox" value="dat" onchange="updateSelected('${commandName}')"> DAT (.dat)</label><br>
+            <label><input type="checkbox" value="csv" onchange="updateSelected('${commandName}')"> CSV (.csv)</label><br>
+            <label><input type="checkbox" value="json" onchange="updateSelected('${commandName}')"> JSON (.json)</label><br>
+            <label><input type="checkbox" value="xml" onchange="updateSelected('${commandName}')"> XML (.xml)</label><br><br>
 
-        <optgroup label="Images">
-            <option value="jpg">JPEG (.jpg)</option>
-            <option value="png">PNG (.png)</option>
-            <option value="gif">GIF (.gif)</option>
-            <option value="svg">SVG (.svg)</option>
-            <option value="webp">WebP (.webp)</option>
-        </optgroup>
+            <strong>Documents</strong><br>
+            <label><input type="checkbox" value="pdf" onchange="updateSelected('${commandName}')"> PDF (.pdf)</label><br>
+            <label><input type="checkbox" value="docx" onchange="updateSelected('${commandName}')"> Word (.docx)</label><br>
+            <label><input type="checkbox" value="txt" onchange="updateSelected('${commandName}')"> Text (.txt)</label><br>
+            <label><input type="checkbox" value="rtf" onchange="updateSelected('${commandName}')"> Rich Text (.rtf)</label><br>
+            <label><input type="checkbox" value="md" onchange="updateSelected('${commandName}')"> Markdown (.md)</label><br><br>
 
-        <optgroup label="Audio">
-            <option value="mp3">MP3 (.mp3)</option>
-            <option value="wav">WAV (.wav)</option>
-            <option value="ogg">OGG (.ogg)</option>
-        </optgroup>
+            <strong>Images</strong><br>
+            <label><input type="checkbox" value="jpg" onchange="updateSelected('${commandName}')"> JPEG (.jpg)</label><br>
+            <label><input type="checkbox" value="png" onchange="updateSelected('${commandName}')"> PNG (.png)</label><br>
+            <label><input type="checkbox" value="gif" onchange="updateSelected('${commandName}')"> GIF (.gif)</label><br>
+            <label><input type="checkbox" value="svg" onchange="updateSelected('${commandName}')"> SVG (.svg)</label><br>
+            <label><input type="checkbox" value="webp" onchange="updateSelected('${commandName}')"> WebP (.webp)</label><br><br>
 
-        <optgroup label="Video">
-            <option value="mp4">MP4 (.mp4)</option>
-            <option value="mov">MOV (.mov)</option>
-            <option value="avi">AVI (.avi)</option>
-            <option value="webm">WebM (.webm)</option>
-        </optgroup>
+            <strong>Custom File Type</strong><br>
+            <input type="text" id="${commandName}-customFileTypeInput" placeholder="Enter custom extension (e.g. .xyz)">
+            <button type="button" onclick="addCustomType('${commandName}')">Add</button>
+        </div>
 
-        <optgroup label="Code">
-            <option value="html">HTML (.html)</option>
-            <option value="css">CSS (.css)</option>
-            <option value="js">JavaScript (.js)</option>
-            <option value="py">Python (.py)</option>
-            <option value="java">Java (.java)</option>
-        </optgroup>
+        <hr>
 
-        <option value="custom">Custom...</option>
-        </select>
-
-        <!-- Hidden custom input field -->
-        <input type="text" id="customFileType" name="customFileType" placeholder="Enter custom file type (e.g. .mytype)" style="display:none; margin-left:10px;">
+        <h4>Selected File Types:</h4>
+        <div id="${commandName}-selectedServerFileTypes" style="font-family: monospace; padding: 5px; background: #f4f4f4; border-radius: 5px;">None</div>
     `;
     document.getElementById("commands-list").appendChild(commandDiv);
     document.getElementById("command-name").value = "";
@@ -133,21 +115,48 @@ function submitWebsiteName(){
     website_name = document.getElementById("website-name").value;
 }
 
-function toggleCustomInput(select) {
-    const customInput = document.getElementById('customFileType');
-    if (select.value === 'custom') {
-      customInput.style.display = 'inline-block';
-      customInput.focus();
-    } else {
-      customInput.style.display = 'none';
-      customInput.value = '';
+// update the displayed lists of accepted file tyes for the server
+function updateSelected(commandName) {
+    const container = document.getElementById(`${commandName}-fileTypeOptions`);
+    const output = document.getElementById(`${commandName}-selectedServerFileTypes`);
+
+    // Get all checked checkboxes inside this command group
+    const checked = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'))
+                         .map(cb => cb.value);
+
+    // update display of selected file types
+    output.textContent = checked.length > 0 ? checked.join(', ') : 'None';
+
+    const commandObj = commands.find(cmd => cmd.name === commandName);
+    if (commandObj) {
+        commandObj.FileTypes = checked;
     }
-  }
+
+    console.log(commands);
+}
+
+function addCustomType(commandName) {
+    const input = document.getElementById(`${commandName}-customFileTypeInput`);
+    const value = input.value.trim().replace(/^\./, ''); // remove leading dot if present
+
+    if (value) {
+        const container = input.closest('div');
+        const commandName = container.id.split('-')[0];
+
+        // Create new checkbox
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" value="${value}" onchange="updateSelected('${commandName}')"> Custom (.${value})<br>`;
+        container.insertBefore(label, input);
+
+        input.value = ''; // clear input
+        updateSelected(commandName);
+    }
+}
+
 
 // command function listeners
 window.addCommand = addCommand;
 window.submitWebsiteName = submitWebsiteName;
-window.toggleCustomInput = toggleCustomInput;
 
 // param function listeners
 window.addParam = addParam;
@@ -157,9 +166,16 @@ window.handleNumberTypeChange = handleNumberTypeChange;
 window.deleteParameter = deleteParameter;
 window.handleMultiValueChange = handleMultiValueChange;
 
+// server param function listeners
+window.addCustomType = addCustomType;
+window.updateSelected = updateSelected;
+
 // create website listeners
 window.createWebsite = createWebsite;
 window.downloadFile = downloadFile;
+
+// create server listeners
+window.createServer = createServer;
 
 
 export {commands, website_name};
