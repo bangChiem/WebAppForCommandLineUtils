@@ -133,7 +133,7 @@ function createWebsite() {
                 </div>
             <br>`
         ).join('')}
-        <button type="button" onclick="downloadTxt('${command.name}')">Download Unix Command</button>
+        <button type="button" onclick="runCommand('${command.name}')">Run Unix Command and download results</button>
         <hr>
         `
     ).join('')}
@@ -167,7 +167,8 @@ function createWebsite() {
         return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 45;
         }   
 
-        function downloadTxt(command) {
+        //send the command to the server, run it there, and then download the result back
+        async function runCommand(command) {
             let data = '';
 
             if (document.getElementById(\`\${command}-abs-path\`).innerText != ""){
@@ -201,11 +202,15 @@ function createWebsite() {
                         const min = Number(inputEl.min);
                         if (value >= max){
                             invalid_range_flag = true;
-                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too large. MAX = \${max} \n \n \`;
+                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too large. MAX = \${max} 
+ 
+ \`;
                         }
                         if (value <= min){
                             invalid_range_flag = true;
-                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too small. Min = \${min} \n \n \`;
+                            invalid_range_msg += \`In Parameter: \${document.querySelector(\`label[for="\${param.id}"]\`).innerHTML}for the command \${command} the inputted value is too small. Min = \${min} 
+ 
+ \`;
                         }
                     }
                 }
@@ -286,12 +291,27 @@ function createWebsite() {
                 }
                 data += " "; 
             });
+            try {
+                const res = await fetch('/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: data.trim() })
+                });
 
-            const txtData = new Blob([data], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(txtData);
-            link.download = 'data.txt';
-            link.click();
+                if (!res.ok) {
+                    const errText = await res.text();
+                    alert("Error: " + errText);
+                    return;
+                }
+
+                const blob = await res.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'result.txt';
+                link.click();
+            } catch (err) {
+                alert("Failed: " + err.message);
+            }
         }
 
         // Try to retrieve an existing userId from the browser's localStorage.
