@@ -4,19 +4,16 @@ function createServer() {
     // --- Collect dynamic command names ---
     const allowedCommands = commands.map(c => c.name);
 
-    // --- Collect all file extensions allowed from any param of type "file" ---
-    const allowedExtensions = Array.from(new Set(
-        commands.flatMap(c =>
-            [...c.params, ...c.optionalParams]
-                .filter(p => p.type === "file")
-                .map(p => {
-                    // Try to extract file extension from param.value or description
-                    const match = p.value?.match(/\.\w+$/) || p.description?.match(/\.\w+$/);
-                    return match ? match[0].toLowerCase() : null;
-                })
-                .filter(Boolean)
-        )
-    ));
+    console.log(allowedCommands);
+
+    // --- Collect all file extensions allowed from commands' FileTypes arrays ---
+    const allowedExtensions = Array.from(
+      new Set(
+        commands
+          .flatMap(c => c.FileTypes || []) // take all extensions from each command
+          .map(ext => ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`) // ensure they start with a dot
+      )
+    );
 
     // --- Default file extensions if none found ---
     if (allowedExtensions.length === 0) {
