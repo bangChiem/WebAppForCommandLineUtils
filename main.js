@@ -75,6 +75,11 @@ function addCommand() {
         <label>Choose allowed file types:</label>
 
         <div id="${commandName}-fileTypeOptions">
+            <div style="margin-bottom:8px;">
+                <button type="button" onclick="selectAllFileTypes('${commandName}')">Select All</button>
+                <button type="button" onclick="deselectAllFileTypes('${commandName}')">Select None</button>
+            </div>
+
             <strong>Data</strong><br>
             <label><input type="checkbox" value="data" onchange="updateSelected('${commandName}')"> Generic Data (.data)</label><br>
             <label><input type="checkbox" value="dat" onchange="updateSelected('${commandName}')"> DAT (.dat)</label><br>
@@ -100,6 +105,7 @@ function addCommand() {
             <input type="text" id="${commandName}-customFileTypeInput" placeholder="Enter custom extension (e.g. .xyz)">
             <button type="button" onclick="addCustomType('${commandName}')">Add</button>
         </div>
+
 
         <hr>
 
@@ -135,6 +141,28 @@ function updateSelected(commandName) {
     console.log(commands);
 }
 
+// Select all checkboxes inside the command's fileTypeOptions
+function selectAllFileTypes(commandName) {
+    const container = document.getElementById(`${commandName}-fileTypeOptions`);
+    if (!container) return;
+    const boxes = container.querySelectorAll('input[type="checkbox"]');
+    boxes.forEach(cb => cb.checked = true);
+    updateSelected(commandName);
+}
+
+// Deselect everything
+function deselectAllFileTypes(commandName) {
+    const container = document.getElementById(`${commandName}-fileTypeOptions`);
+    if (!container) return;
+    const boxes = container.querySelectorAll('input[type="checkbox"]');
+    boxes.forEach(cb => cb.checked = false);
+    updateSelected(commandName);
+}
+
+window.selectAllFileTypes = selectAllFileTypes;
+window.deselectAllFileTypes = deselectAllFileTypes;
+
+
 function addCustomType(commandName) {
     const input = document.getElementById(`${commandName}-customFileTypeInput`);
     const value = input.value.trim().replace(/^\./, ''); // remove leading dot if present
@@ -165,10 +193,12 @@ window.handleParamTypeChange = handleParamTypeChange;
 window.handleNumberTypeChange = handleNumberTypeChange;
 window.deleteParameter = deleteParameter;
 window.handleMultiValueChange = handleMultiValueChange;
+window.selectAllFileTypes = selectAllFileTypes;
 
 // server param function listeners
 window.addCustomType = addCustomType;
 window.updateSelected = updateSelected;
+window.deselectAllFileTypes = deselectAllFileTypes;
 
 // create website listeners
 window.createWebsite = createWebsite;
