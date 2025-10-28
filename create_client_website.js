@@ -244,10 +244,10 @@ function createWebsite() {
                 else{
                     let syntax = param.getAttribute("param-value");
                     let paramInput;
-                    if(param.type == "file"){
-                        paramInput = document.getElementById(param.id).files[0].name;
-                    }
-                    else{
+                    if (param.type === "file") {
+                        const originalName = document.getElementById(param.id).files[0].name;
+                        paramInput = \`uploads/\${userId}/\${originalName}\`;
+                    } else {
                         paramInput = document.getElementById(param.id).value;
                     }
                     let result = syntax.replace("<>", paramInput);
@@ -280,10 +280,10 @@ function createWebsite() {
                 else{
                     let syntax = param.getAttribute("param-value");
                     let paramInput;
-                    if(param.type == "file"){
-                        paramInput = document.getElementById(param.id).files[0].name;
-                    }
-                    else{
+                    if (param.type === "file") {
+                        const originalName = document.getElementById(param.id).files[0].name;
+                        paramInput = \`uploads/\${userId}/\${originalName}\`;
+                    } else {
                         paramInput = document.getElementById(param.id).value;
                     }
                     let result = syntax.replace("<>", paramInput);
