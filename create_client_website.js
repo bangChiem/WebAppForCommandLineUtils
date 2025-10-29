@@ -339,7 +339,6 @@ function createWebsite() {
         }
 
         async function uploadFile(fileInput_src) {
-            console.log(\`UserID: \${userId}\`); //DEMO PURPOSES
             const fileInput = document.getElementById(fileInput_src);
             if (!fileInput.files.length) {
                 alert("Please select a file first.");
