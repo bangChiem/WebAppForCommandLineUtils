@@ -379,12 +379,20 @@ function createWebsite() {
 
                 files.forEach(file => {
                     const li = document.createElement('li');
-                    li.textContent = file;
+                    const link = document.createElement('a');
+
+                    link.href = \`/uploads/\${userId}/\${file}\`;
+                    link.textContent = file;
+                    link.download = file; // Forces download in browser
+                    link.style.color = "blue";
+                    link.style.textDecoration = "underline";
+
+                    li.appendChild(link);
                     list.appendChild(li);
                 });
-            } catch (err) {
-                console.error('Error loading files:', err);
-            }
+                } catch (err) {
+                    console.error('Error loading files:', err);
+                }
         }
 
         // have listener to fetch all current files in the directory on page load; ignore if no userId in localStorage
