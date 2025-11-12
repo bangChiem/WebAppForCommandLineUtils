@@ -1,6 +1,20 @@
 import { commands, website_name } from "./main.js";
 
+// const fs = require('fs');
+
+// /**
+//  * Writes a list of objects to a file as JSON.
+//  * @param {string} filePath - The path to write the file.
+//  * @param {Object[]} data - The list of objects.
+//  */
+// function writeObjectsToFile(filePath, data) {
+//   const jsonData = JSON.stringify(data, null, 2); // Pretty-print with 2-space indentation
+//   fs.writeFileSync(filePath, jsonData, 'utf-8');
+//   console.log(`✅ Data written to ${filePath}`);
+// }
+
 function createWebsite() {
+    console.log(commands);
     const htmlContent = 
 `<!DOCTYPE html>
 <html>
